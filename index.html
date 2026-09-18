@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Slides — Gesture & Voice Controlled Presentations</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script type="module">
+    import { GestureRecognizer, FilesetResolver } from
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
+    window._MPImports = { GestureRecognizer, FilesetResolver };
+  </script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-brand">
+    <span class="brand-icon">◈</span>
+    <span class="brand-name">Smart<strong>Slides</strong></span>
+  </div>
+  <div class="header-actions">
+    <button id="btnHelp" class="btn btn-ghost" title="Help">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      Help
+    </button>
+  </div>
+</header>
+
+<!-- LAYOUT -->
+<main class="app-layout">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Upload — PPTX only -->
+    <section class="panel" id="uploadPanel">
+      <h2 class="panel-title">Upload Presentation</h2>
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-icon">⊕</div>
+        <p>Drop your PowerPoint here</p>
+        <span class="drop-sub">or</span>
+        <label class="btn btn-primary" for="fileInput">Browse Files</label>
+        <input type="file" id="fileInput" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden />
+        <p class="drop-hint">PowerPoint (.pptx) only</p>
+      </div>
+      <div id="uploadProgress" class="upload-progress hidden">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span id="progressLabel">Loading…</span>
+      </div>
+    </section>
+
+    <!-- Slide Counter -->
+    <section class="panel panel-compact">
+      <div class="slide-counter">
+        <span id="currentSlideNum">—</span>
+        <span class="counter-divider">/</span>
+        <span id="totalSlideNum">—</span>
+        <span class="counter-label">slides</span>
+      </div>
+    </section>
+
+    <!-- Navigation -->
+    <section class="panel panel-compact">
+      <h2 class="panel-title">Navigation</h2>
+      <div class="nav-buttons">
+        <button class="btn btn-nav" id="btnFirst" title="First Slide">⏮</button>
+        <button class="btn btn-nav btn-large" id="btnPrev" title="Previous">◀</button>
+        <button class="btn btn-nav btn-large" id="btnNext" title="Next">▶</button>
+        <button class="btn btn-nav" id="btnLast" title="Last Slide">⏭</button>
+      </div>
+      <div class="fullscreen-row">
+        <button class="btn btn-ghost btn-sm" id="btnFullscreen">⤢ Fullscreen</button>
+        <button class="btn btn-ghost btn-sm" id="btnStartPresent">▶ Present</button>
+      </div>
+    </section>
+
+    <!-- AI Panel -->
+    <section class="panel">
+      <h2 class="panel-title">AI Assistant</h2>
+      <div class="hf-token-row">
+        <input type="password" id="hfToken" placeholder="HF token (optional)" class="token-input" />
+        <button class="btn btn-ghost btn-sm" id="btnSaveToken">Save</button>
+      </div>
+      <div class="ai-buttons">
+        <button class="btn btn-ai" id="btnSummarize">✦ Summarize Slide</button>
+        <button class="btn btn-ai" id="btnExplain">✦ Explain Slide</button>
+        <button class="btn btn-ai" id="btnQuestion">✦ Ask a Question</button>
+      </div>
+      <div id="aiQuestionBox" class="ai-question-box hidden">
+        <input type="text" id="aiQuestionInput" placeholder="Type your question…" class="question-input" />
+        <button class="btn btn-primary btn-sm" id="btnAskQuestion">Ask</button>
+      </div>
+      <div id="aiResult" class="ai-result hidden">
+        <div class="ai-result-header">
+          <span class="ai-result-label">AI Response</span>
+          <button class="btn-icon" id="btnCloseAI">✕</button>
+        </div>
+        <div id="aiResultText" class="ai-result-text"></div>
+        <div id="aiLoading" class="ai-loading hidden">
+          <span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TTS -->
+    <section class="panel panel-compact">
+      <h2 class="panel-title">Read Aloud</h2>
+      <div class="tts-buttons">
+        <button class="btn btn-tts" id="btnReadSlide">🔊 Read</button>
+        <button class="btn btn-tts-sm" id="btnPauseRead" title="Pause">⏸</button>
+        <button class="btn btn-tts-sm" id="btnResumeRead" title="Resume">▶</button>
+        <button class="btn btn-tts-sm" id="btnStopRead" title="Stop">⏹</button>
+        <button class="btn btn-tts-sm" id="btnRepeatRead" title="Repeat">↺</button>
+      </div>
+    </section>
+
+  </aside>
+
+  <!-- CENTER VIEWER -->
+  <div class="viewer-column">
+    <div class="viewer-container" id="viewerContainer">
+      <div class="viewer-empty" id="viewerEmpty">
+        <div class="empty-icon">◈</div>
+        <h3>No presentation loaded</h3>
+        <p>Upload a PowerPoint (.pptx) file to begin</p>
+      </div>
+      <canvas id="slideCanvas" class="slide-canvas hidden"></canvas>
+      <img id="slideImg" class="slide-img hidden" alt="Slide" />
+      <div id="swipeOverlay" class="swipe-overlay"></div>
+      <div id="gestureAnim" class="gesture-anim hidden"></div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-dot" id="voiceDot"></span>
+        <span id="voiceLabel">Voice: off</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" id="gestureDot"></span>
+        <span id="gestureLabel">Gesture: off</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" id="ttsDot"></span>
+        <span id="ttsLabel">TTS: idle</span>
+      </div>
+      <div id="lastCommandDisplay" class="last-command"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="sidebar sidebar-right">
+
+    <!-- Webcam -->
+    <section class="panel">
+      <h2 class="panel-title">Camera & Gestures</h2>
+      <div class="webcam-wrapper">
+        <video id="webcam" autoplay muted playsinline class="webcam-video"></video>
+        <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
+        <div id="cameraOff" class="camera-off-msg">Camera off</div>
+      </div>
+      <div class="camera-buttons">
+        <button class="btn btn-primary btn-sm" id="btnStartCamera">Start Camera</button>
+        <button class="btn btn-ghost btn-sm" id="btnStopCamera">Stop</button>
+      </div>
+      <div id="cameraError" class="error-msg hidden"></div>
+      <div class="gesture-legend">
+        <div class="gesture-row"><span class="gesture-icon">👋→</span><span>Swipe right — Next slide</span></div>
+        <div class="gesture-row"><span class="gesture-icon">←👋</span><span>Swipe left — Previous slide</span></div>
+        <div class="gesture-row"><span class="gesture-icon">🤲</span><span>Open both hands — Zoom in/out</span></div>
+        <div class="gesture-row"><span class="gesture-icon">✋</span><span>Hold open palm — Fullscreen</span></div>
+      </div>
+    </section>
+
+    <!-- Voice -->
+    <section class="panel">
+      <h2 class="panel-title">Voice Control</h2>
+      <div class="voice-toggle">
+        <button class="btn btn-primary" id="btnStartVoice">🎤 Listen</button>
+        <button class="btn btn-ghost" id="btnStopVoice">Stop</button>
+      </div>
+      <div id="voiceError" class="error-msg hidden"></div>
+      <div class="voice-log" id="voiceLog">
+        <p class="voice-log-empty">Commands will appear here…</p>
+      </div>
+      <div class="voice-commands-hint">
+        <strong>Say one word:</strong>
+        <code>next</code> <code>back</code> <code>first</code> <code>last</code>
+        <code>read</code> <code>stop</code> <code>pause</code> <code>resume</code>
+        <code>repeat</code> <code>summarize</code> <code>explain</code>
+        <code>present</code> <code>exit</code>
+      </div>
+    </section>
+
+    <!-- Thumbnails -->
+    <section class="panel panel-thumbnails">
+      <h2 class="panel-title">Slides</h2>
+      <div class="thumbnail-strip" id="thumbnailStrip">
+        <p class="thumb-empty">No slides loaded</p>
+      </div>
+    </section>
+
+  </aside>
+</main>
+
+<!-- HELP MODAL -->
+<div id="helpModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Help & Instructions</h2>
+      <button class="btn-icon" id="btnCloseHelp">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="help-grid">
+        <div class="help-section">
+          <h3>🖐 Hand Gestures</h3>
+          <ul>
+            <li><strong>Swipe right →</strong> — Next slide</li>
+            <li><strong>Swipe left ←</strong> — Previous slide</li>
+            <li><strong>Hold open palm ✋</strong> — Toggle fullscreen (hold 0.4s)</li>
+            <li><strong>Two hands spread apart 🤲</strong> — Zoom in</li>
+            <li><strong>Two hands close together</strong> — Zoom out</li>
+            <li>Good lighting and a plain background improve detection.</li>
+            <li>Keep your hand clearly visible in the camera frame.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>🎤 Voice Commands — say ONE word</h3>
+          <ul>
+            <li><code>next</code> — next slide</li>
+            <li><code>back</code> — previous slide</li>
+            <li><code>first</code> — jump to slide 1</li>
+            <li><code>last</code> — jump to last slide</li>
+            <li><code>read</code> — read slide text aloud</li>
+            <li><code>stop</code> — stop reading</li>
+            <li><code>pause</code> / <code>resume</code> — TTS control</li>
+            <li><code>repeat</code> — read slide again</li>
+            <li><code>summarize</code> — AI summary</li>
+            <li><code>explain</code> — AI explanation</li>
+            <li><code>present</code> — fullscreen mode</li>
+            <li><code>exit</code> — close fullscreen</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>📁 Uploading</h3>
+          <ul>
+            <li>Only <strong>PowerPoint (.pptx)</strong> files are accepted.</li>
+            <li>Drag and drop, or click Browse.</li>
+            <li>Slides are rendered client-side — nothing is uploaded to any server.</li>
+            <li>Text content is extracted for TTS and AI features.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>✦ AI Features</h3>
+          <ul>
+            <li>Optional — requires a free Hugging Face token.</li>
+            <li>Get one at <strong>huggingface.co/settings/tokens</strong></li>
+            <li>Paste it in the AI panel and click Save.</li>
+            <li>Works on slides with text content.</li>
+            <li>Token is only stored in your browser session.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="help-keyboard">
+        <h3>⌨ Keyboard Shortcuts</h3>
+        <div class="key-grid">
+          <kbd>→</kbd><span>Next slide</span>
+          <kbd>←</kbd><span>Previous slide</span>
+          <kbd>Home</kbd><span>First slide</span>
+          <kbd>End</kbd><span>Last slide</span>
+          <kbd>+</kbd><span>Zoom in</span>
+          <kbd>-</kbd><span>Zoom out</span>
+          <kbd>F5</kbd><span>Start presentation</span>
+          <kbd>Esc</kbd><span>Exit fullscreen</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN OVERLAY -->
+<div id="presentationOverlay" class="presentation-overlay hidden">
+  <canvas id="fsCanvas" class="fs-canvas"></canvas>
+  <img id="fsImg" class="fs-img hidden" alt="Slide" />
+  <div class="fs-controls">
+    <button class="fs-btn" id="fsBtnPrev">◀</button>
+    <span class="fs-counter" id="fsCounter">1 / 1</span>
+    <button class="fs-btn" id="fsBtnNext">▶</button>
+    <button class="fs-btn fs-btn-exit" id="fsBtnExit">✕ Exit</button>
+  </div>
+  <div id="fsGestureAnim" class="gesture-anim hidden"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
