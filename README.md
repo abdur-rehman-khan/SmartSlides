@@ -1,151 +1,134 @@
----
-title: SmartSlides
-emoji: 🎯
-colorFrom: indigo
-colorTo: purple
-sdk: static
-pinned: false
----
+# 🎯 SmartSlides
 
-# ◈ SmartSlides
+**A gesture- and voice-controlled presentation viewer that runs entirely in your browser.**
 
-> A gesture + voice controlled presentation viewer that runs entirely in the browser — no backend required.
+SmartSlides lets you navigate PDF presentations and images using hand gestures, voice commands, keyboard shortcuts, and touch controls. Optional AI features can summarize slides, explain concepts, and answer questions.
 
----
+**Repository:** https://github.com/abdur-rehman-khan/SmartSlides
 
-## Features
+## ✨ Features
 
-| Feature | How it works |
+| Feature | Description |
 |---|---|
-| **PDF & Image upload** | PDF.js renders each page to canvas; images load natively |
-| **Hand gesture control** | MediaPipe Tasks Vision detects your wrist position via webcam |
-| **Voice commands** | Web Speech API (SpeechRecognition) listens continuously |
-| **Read aloud** | SpeechSynthesis API reads slide text with pause/resume/stop |
-| **AI: Summarize / Explain / Q&A** | Hugging Face Inference API with Mistral-7B |
-| **Slide thumbnails** | Auto-generated strip for quick navigation |
-| **Fullscreen mode** | Native browser fullscreen with on-hover controls |
-| **Touch swipe** | Left/right swipe on mobile |
-| **Keyboard shortcuts** | Arrow keys, Page Up/Down, Home, End |
+| PDF and image upload | PDF.js renders PDF pages; images load natively |
+| Hand gesture control | MediaPipe Tasks Vision tracks your hand using your webcam |
+| Voice commands | Web Speech API enables voice-controlled navigation |
+| Read aloud | SpeechSynthesis reads slide text aloud |
+| AI assistant | Summarize, explain, and ask questions using the Hugging Face Inference API |
+| Slide thumbnails | Navigate quickly using generated slide previews |
+| Fullscreen mode | Present slides in native browser fullscreen |
+| Touch controls | Swipe between slides on mobile devices |
+| Keyboard shortcuts | Navigate using arrow keys, Page Up/Down, Home, and End |
 
----
+## 🖐️ Hand Gesture Guide
 
-## Gesture Guide
-
-| Movement | Action |
+| Hand movement | Action |
 |---|---|
-| Move open hand **→ Right** | Previous slide |
-| Move open hand **← Left** | Next slide |
+| Move your open hand to the right | Previous slide |
+| Move your open hand to the left | Next slide |
 
-> The video is mirrored, so move your hand in the direction you see it move on screen.
+The webcam preview is mirrored, so move your hand in the direction you see it move on screen.
 
----
-
-## Voice Commands
+## 🎙️ Voice Commands
 
 | Say | Action |
 |---|---|
-| `next slide` | Go forward one slide |
-| `previous slide` | Go back one slide |
-| `first slide` | Jump to slide 1 |
+| `next slide` | Go to the next slide |
+| `previous slide` | Go to the previous slide |
+| `first slide` | Jump to the first slide |
 | `last slide` | Jump to the last slide |
-| `read this slide` | Read slide text aloud |
-| `stop reading` | Stop TTS |
-| `pause` | Pause TTS |
-| `resume` | Resume TTS |
-| `summarize slide` | AI summary |
-| `explain slide` | AI explanation |
-| `start presentation` | Open fullscreen mode |
+| `read this slide` | Read the slide text aloud |
+| `stop reading` | Stop text-to-speech |
+| `pause` | Pause reading |
+| `resume` | Resume reading |
+| `summarize slide` | Generate an AI summary |
+| `explain slide` | Request an AI explanation |
+| `start presentation` | Enter fullscreen mode |
 | `stop presentation` | Exit fullscreen mode |
 
----
+## 🚀 Getting Started
 
-## AI Setup (Optional)
+### Option 1: Download the project
 
-AI features (Summarize, Explain, Ask a Question) use the **Hugging Face Inference API** with [`mistralai/Mistral-7B-Instruct-v0.3`](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3), which is **free and publicly accessible**.
+1. Open the [SmartSlides GitHub repository](https://github.com/abdur-rehman-khan/SmartSlides).
+2. Click **Code → Download ZIP**.
+3. Extract the downloaded ZIP file.
+4. Open `index.html` in a modern browser.
 
-**To use AI features:**
-1. Get a free HF token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) (free account required)
-2. Paste the token into the **AI Assistant** panel in the app
-3. Click **Save**
+For the best experience, use a local development server, especially if browser security restrictions prevent camera or microphone access.
 
-The token is stored only in `sessionStorage` (cleared when you close the tab). It is **never** embedded in the source code.
+### Option 2: Clone with Git
 
-> **Note:** AI features only work on **text-layer PDFs** (PDFs with selectable text). Scanned image PDFs will show "No extractable text found."
+Install [Git](https://git-scm.com/downloads), then run:
 
-### Hugging Face Spaces: Secure Token Handling
-
-When deploying to HF Spaces, you can expose the token to users via a **Space Secret**. The correct approach for a Static Space is:
-
-1. In your Space settings → **Variables and Secrets** → add `HF_TOKEN` as a **secret**
-2. Static Spaces do **not** serve server-side code, so the token cannot be automatically injected. Users must paste their own token.
-3. If you want automatic token injection, upgrade to a **Docker Space** with a minimal reverse proxy (see `proxy/` folder in advanced setup).
-
-For a pure static deployment, the current approach (user-supplied token) is the correct and secure one.
-
----
-
-## File Structure
-
-```
-smart-slides/
-├── index.html      ← Main app (single-page)
-├── style.css       ← All styles
-├── script.js       ← All logic
-└── README.md       ← This file
-```
-
----
-
-## Deploying to Hugging Face Spaces (Static)
-
-### Step-by-step
-
-**1. Create a new Space**
-- Go to [huggingface.co/new-space](https://huggingface.co/new-space)
-- Give it a name, e.g. `smart-slides`
-- Set **Space SDK** → **Static**
-- Set visibility to **Public** (or Private)
-- Click **Create Space**
-
-**2. Upload your files**
-
-Option A — via the web UI:
-- In your new Space, click **Files** → **Add file** → **Upload files**
-- Upload `index.html`, `style.css`, `script.js`, `README.md`
-- Click **Commit changes**
-
-Option B — via Git:
 ```bash
-git clone https://huggingface.co/spaces/YOUR_USERNAME/smart-slides
-cd smart-slides
-# copy index.html style.css script.js README.md here
-git add .
-git commit -m "Initial upload"
-git push
+git clone https://github.com/abdur-rehman-khan/SmartSlides.git
+cd SmartSlides
 ```
 
-**3. Done!**
-- Your app is live at `https://YOUR_USERNAME-smart-slides.hf.space`
-- No build step, no server, no costs
+Open the project in VS Code or your preferred editor.
 
----
+To run a local server using Python, execute:
 
-## Browser Compatibility
+```bash
+python -m http.server 8000
+```
 
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| Voice Recognition | ✅ | ✅ | ❌ | ❌ |
-| TTS / Read Aloud | ✅ | ✅ | ✅ | ✅ |
-| Hand Gestures | ✅ | ✅ | ✅* | ✅* |
-| PDF Upload | ✅ | ✅ | ✅ | ✅ |
+Then open http://localhost:8000 in your browser.
 
-> *Gesture detection uses WebGL/WASM — works in most modern browsers but GPU delegate may fall back to CPU.
+## 🤖 AI Assistant Setup
 
-**Recommended browser: Google Chrome or Microsoft Edge** for full feature support including voice recognition.
+The optional AI features use the Hugging Face Inference API and the `mistralai/Mistral-7B-Instruct-v0.3` model.
 
----
+1. Create or sign in to your [Hugging Face account](https://huggingface.co/).
+2. Create an access token at [Hugging Face token settings](https://huggingface.co/settings/tokens).
+3. Open SmartSlides and enter your token in the AI Assistant panel.
+4. Click **Save** to enable the AI features.
 
-## Keyboard Shortcuts
+The token is stored in browser `sessionStorage`, which is cleared when the browser tab's session ends. It is not intended to be embedded in the source code.
+
+**Important security note:** Browser-side tokens can be accessed by JavaScript running on the same page. Only use a token with the minimum permissions required, and never commit it to GitHub. For a production deployment with shared API access, use a secure backend or server-side proxy.
+
+AI features require PDFs with selectable text. Scanned PDFs may need OCR before their contents can be analyzed.
+
+## 📁 Project Structure
+
+```text
+SmartSlides/
+├── index.html    # Main application
+├── style.css     # Application styles
+├── script.js     # Application logic
+└── README.md     # Project documentation
+```
+
+## 🌐 Deployment
+
+SmartSlides is a static web application and does not require a traditional backend for its core presentation features.
+
+You can deploy it using a static hosting provider, such as:
+
+- [GitHub Pages](https://pages.github.com/)
+- [Cloudflare Pages](https://pages.cloudflare.com/)
+- [Netlify](https://www.netlify.com/)
+- [Vercel](https://vercel.com/)
+
+### Deploy with GitHub Pages
+
+1. Open the [SmartSlides repository](https://github.com/abdur-rehman-khan/SmartSlides).
+2. Navigate to **Settings → Pages**.
+3. Under the build and deployment section, select **Deploy from a branch**.
+4. Choose the `main` branch and the root (`/`) folder.
+5. Save the settings and wait for deployment.
+
+If deployment succeeds, your site will generally be available at:
+
+`https://abdur-rehman-khan.github.io/SmartSlides/`
+
+This URL assumes GitHub Pages is enabled and your repository contains the required files in the selected location.
+
+**Note:** GitHub Pages is static hosting. It cannot securely store private API keys or run a server-side proxy. Users must provide their own AI token unless you implement a separate backend.
+
+## ⌨️ Keyboard Shortcuts
 
 | Key | Action |
 |---|---|
@@ -153,30 +136,43 @@ git push
 | `←` / `↑` / `Page Up` | Previous slide |
 | `Home` | First slide |
 | `End` | Last slide |
-| `F5` | Start presentation (fullscreen) |
+| `F5` | Start presentation |
 | `Esc` | Exit fullscreen |
 
+## 🌍 Browser Compatibility
+
+| Feature | Chrome | Edge | Firefox | Safari |
+|---|---|---|---|---|
+| Voice recognition | Supported | Supported | Limited or unavailable | Limited or unavailable |
+| Text-to-speech | Supported | Supported | Supported | Supported |
+| Hand gestures | Depends on camera and WebGL/WASM support | Depends on camera and WebGL/WASM support | Depends on camera and WebGL/WASM support | Depends on camera and WebGL/WASM support |
+| PDF and image viewing | Supported | Supported | Supported | Supported |
+
+**Recommended:** Google Chrome or Microsoft Edge for the best overall voice-control experience.
+
+## 🔒 Privacy
+
+- **Webcam:** Video is processed locally by MediaPipe when gesture detection is active.
+- **Voice:** Speech recognition may use browser-vendor servers, depending on the browser implementation.
+- **AI token:** Stored in browser session storage by the application.
+- **Slide content:** Remains in the browser unless you use features that send extracted text to the AI service.
+
+Avoid uploading confidential presentations when using external AI services.
+
+## ⚠️ Limitations
+
+- Voice recognition support varies by browser.
+- AI analysis requires extractable text from PDFs.
+- Hand gesture detection works best with good lighting and a clear background.
+- MediaPipe model assets must download before gesture detection can start.
+- Hugging Face Inference API availability and rate limits depend on the model and account.
+
+## 📄 License
+
+This project is licensed under the MIT License. See the `LICENSE` file if one is included in the repository.
+
 ---
 
-## Privacy
+Developed by [Abdur Rehman Khan](https://github.com/abdur-rehman-khan).
 
-- **Webcam feed** stays on your device — frames are processed locally by MediaPipe WASM
-- **Voice audio** is processed by your browser's built-in speech recognition (on-device or browser vendor's server)
-- **HF token** is stored in `sessionStorage` only — cleared when you close the tab
-- **Slide content** never leaves your browser unless you use AI features
-
----
-
-## Limitations & Known Issues
-
-- Voice recognition requires Chrome or Edge (Web Speech API)
-- AI features require a PDF with a text layer (not scanned images)
-- Hand gesture detection requires good lighting and a clear background
-- MediaPipe model (~25MB) loads on first camera start — may take 5-10 seconds on slow connections
-- The Hugging Face free tier has rate limits; if you hit them, wait 60 seconds
-
----
-
-## License
-
-MIT — free to use, modify, and deploy.
+If you find this project useful, consider giving the repository a ⭐ on GitHub.
