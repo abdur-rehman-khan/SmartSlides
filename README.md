@@ -5,7 +5,9 @@
 SmartSlides lets you navigate PDF presentations and images using hand gestures, voice commands, keyboard shortcuts, and touch controls. Optional AI features can summarize slides, explain concepts, and answer questions.
 
 **Repository:** https://github.com/abdur-rehman-khan/SmartSlides
+## 📸 Application Screenshot
 
+![Hospital AI Chatbot](SmartSlides.png)
 ## ✨ Features
 
 | Feature | Description |
